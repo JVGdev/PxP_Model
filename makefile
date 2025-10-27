@@ -22,9 +22,9 @@ CC=gfortran
 #
 
 all: all_
-	rm m_*.mod	
+	rm m_*.mod
 
-all_: $(PROJ_NAME)
+all_: objFolder $(PROJ_NAME)
 
 $(PROJ_NAME): $(OBJ)
 	$(CC) -o ./$@ main.f90 $^;
@@ -32,6 +32,8 @@ $(PROJ_NAME): $(OBJ)
 ./obj/%.o: ./src/%.f90
 	$(CC) -c -o $@ $<
  
+objFolder:
+	@ mkdir -p obj
 
 clean:
 	rm -rf obj/*.o $(PROJ_NAME) *~

@@ -68,91 +68,102 @@ module m_brain
                         res = self%stop_val
                 end function get_stop_val
                 
-                subroutine next_step(self, view, n, m, x,y, nxt) 
-                        class(brain), intent(inout) :: self
-                        character, dimension(:,:), intent(in) :: view
-                        integer, dimension(:), intent(inout) :: nxt
-                        integer, intent(in) :: x, y, n, m
-                        real, dimension(n,m) :: preview 
-                        integer :: bi, bj, ai, aj, i, j
-                        preview = 0.0
+	subroutine next_step(self, view, n, m, x,y, nxt) 
+  		class(brain), intent(inout) :: self
+        character, dimension(:,:), intent(in) :: view
+      	integer, dimension(:), intent(inout) :: nxt
+    	integer, intent(in) :: x, y, n, m
+      	real, dimension(n,m) :: preview 
+    	integer :: bi, bj, ai, aj, i, j
+    	preview = 0.0
 
-                        ai = x
-                        aj = y
+    	ai = x
+      	aj = y
                         
-                        preview = self%calc_entities(view, n, m, ai, aj)
-                        preview(self%last_x, self%last_y) =  0.0
-                        preview(x, y) = 0.0
-                        self%last_x = x
-                        self%last_y = y
+      	preview = self%calc_entities(view, n, m, ai, aj)
+    	preview(self%last_x, self%last_y) =  0.0
+    	preview(x, y) = 0.0
+    	self%last_x = x
+      	self%last_y = y
 
-                        bi = merge(x+1, x, x < n)
-                        ai = merge(x-1, x, x > 1)
-                        bj = merge(y+1, y, y < n)      ! RAW e WAR
-                        aj = merge(y-1, y, y > 1)
+      	bi = merge(x+1, x, x < n)
+      	ai = merge(x-1, x, x > 1)
+    	bj = merge(y+1, y, y < m)      ! RAW e WAR
+    	aj = merge(y-1, y, y > 1)
                         
-                        nxt = maxloc(preview(ai:bi, aj:bj))
-                        nxt(1) = nxt(1) + (ai-1) 
-                        nxt(2) = nxt(2) + (aj-1)
+    	nxt = maxloc(preview(ai:bi, aj:bj))
+      	nxt(1) = nxt(1) + (ai-1) 
+        nxt(2) = nxt(2) + (aj-1)
                                 
-                end subroutine next_step
-
-                function calc_entities(self, view, n, m, ai, aj)
-                        class(brain), intent(in) :: self
-                        character, dimension(:,:), intent(in) :: view
-                        integer, intent(in) :: n, m, ai, aj
-                        real, dimension(n,n) :: calc_entities
-                        integer :: i, j, valx, valy, bi, bj
-                        character :: act
+		!do i=1, n
+        !  	do j=1, m
+		!	  	write (*, "(F10.3)", advance="no") preview(i, j)
+  		!	end do
+        !   print *
+    	!end do		
                         
-                        do i=1, n
-                                do j=1, m
-                                        act = view(i, j)
-                                        if(ai == i .and. aj == j) then
-                                        else if(act == 'x') then
-                                               call wave(calc_entities, i, j, n, m, 'a', self%get_plant_val()) 
-                                        else if(act == 'K') then
-                                               call wave(calc_entities, i, j, n, m, 'a', self%get_predator_val()) 
-                                        else if(act == 'P') then
-                                               call wave(calc_entities, i, j, n, m, 'a', self%get_prey_val()) 
-                                        end if
+      	!read *, bi
+  	end subroutine next_step
 
-                                end do
-                        end do
+    function calc_entities(self, view, n, m, ai, aj)
+        class(brain), intent(in) :: self
+        character, dimension(:,:), intent(in) :: view
+        integer, intent(in) :: n, m, ai, aj
+        real, dimension(n,m) :: calc_entities
+    	integer :: i, j, valx, valy, bi, bj
+        character :: act
+    	calc_entities = 0.0
                         
-                end function
+        do i=1, n
+  	    	do j=1, m
+            	act = view(i, j)
+                if(ai == i .and. aj == j) then
+                else if(act == 'x') then
+                	call wave(calc_entities, i, j, n, m, 'a', self%get_plant_val()) 
+              	else if(act == 'K') then
+          			call wave(calc_entities, i, j, n, m, 'a', self%get_predator_val()) 
+              	else if(act == 'P') then
+            		call wave(calc_entities, i, j, n, m, 'a', self%get_prey_val()) 
+          		end if
+        	end do
+        end do
+	  	
+    end function
                 
-                recursive subroutine wave(matrix, x, y, n, m, constraint, weight)
-                        integer, intent(in) :: x, y, n, m
-                        character, intent(in) :: constraint
-                        real, intent(in) :: weight
-                        real, dimension(:,:) :: matrix
-                        real :: nweight
-                        nweight = weight / 4
+	recursive subroutine wave(matrix, x, y, n, m, constraint, weight)
+    	integer, intent(in) :: x, y, n, m
+        character, intent(in) :: constraint
+        real, intent(in) :: weight
+        real, dimension(:,:) :: matrix
+  		real, allocatable :: wlist(:)
+        integer :: times, max_cord, i, j, i_window_m, i_window_p, j_window_m, j_window_p
+        real :: nweight
+        
+		max_cord = merge(n, m, n > m)
 
-                        !O que ela faz de fato
-                        matrix(x, y) = matrix(x, y) + weight
-                        
-                        ! Saída
-                        
-                        if(nweight <= 1) then
-                                return
-                        end if
+		allocate(wlist(max_cord))
+        wlist = 0.0      
 
+	  	times = 1
+        nweight = weight
+        do while(nweight >= 1 .and. times <= max_cord)
+          	wlist(times) = nweight
+			nweight = nweight / 2
+			times = times + 1
+        end do
+		
+		do i=0, times
+        	do j=0, times
+                i_window_m = merge(x-i, 1, x-i > 1)
+                i_window_p = merge(x+i, n, x+i < n)
+                j_window_m = merge(y-j, 1, y-j > 1)
+                j_window_p = merge(y+j, m, y+j < m)
+				matrix(i_window_m, j_window_m) = matrix(i_window_m, j_window_m) + wlist((x+y) - (i+j))
+				matrix(i_window_p, j_window_p) = matrix(i_window_p, j_window_p) + wlist((x+y) - (i+j))
+  			end do
+        end do		
+      	deallocate(wlist)
 
-                        ! Recursão
-                        if(constraint /= 'r' .and. x <  n) then
-                                call wave(matrix, x+1, y, n, m, 'l', nweight)
-                        end if
-                        if(constraint /= 'l' .and. x > 1) then
-                                call wave(matrix, x-1, y, n, m, 'r', nweight)
-                        end if
-                        if(constraint /= 'u' .and. y < m) then
-                                call wave(matrix, x, y+1, n, m, 'd', nweight)
-                        end if
-                        if(constraint /= 'd' .and. y > 1) then
-                                call wave(matrix, x, y-1, n, m, 'u', nweight)
-                        end if
-                end subroutine
+  	end subroutine wave
                 
 end module m_brain
