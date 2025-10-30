@@ -8,6 +8,7 @@ M_SOURCE := ./src/m_entity.f90 \
             ./src/m_animal.f90 \
             ./src/m_prey.f90 \
             ./src/m_predator.f90 \
+    		./src/m_env_helper.f90 \
             ./src/m_environment.f90 
 
 # Object files

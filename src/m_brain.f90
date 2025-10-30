@@ -119,20 +119,19 @@ module m_brain
             	act = view(i, j)
                 if(ai == i .and. aj == j) then
                 else if(act == 'x') then
-                	call wave(calc_entities, i, j, n, m, 'a', self%get_plant_val()) 
+                	call wave(calc_entities, i, j, n, m, self%get_plant_val()) 
               	else if(act == 'K') then
-          			call wave(calc_entities, i, j, n, m, 'a', self%get_predator_val()) 
+          			call wave(calc_entities, i, j, n, m, self%get_predator_val()) 
               	else if(act == 'P') then
-            		call wave(calc_entities, i, j, n, m, 'a', self%get_prey_val()) 
+            		call wave(calc_entities, i, j, n, m, self%get_prey_val()) 
           		end if
         	end do
         end do
 	  	
     end function
                 
-	recursive subroutine wave(matrix, x, y, n, m, constraint, weight)
+	recursive subroutine wave(matrix, x, y, n, m, weight)
     	integer, intent(in) :: x, y, n, m
-        character, intent(in) :: constraint
         real, intent(in) :: weight
         real, dimension(:,:) :: matrix
   		real, allocatable :: wlist(:)

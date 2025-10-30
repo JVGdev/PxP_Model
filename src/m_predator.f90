@@ -29,7 +29,7 @@ module m_predator
                         call no_args%set_movement(1)
                         call no_args%set_health(100)
                         call no_args%set_attack(2.0)
-                        call no_args%set_passive_cost(5.0)
+                        call no_args%set_passive_cost(15.0)
                         
                         call no_args%set_brain(brain(art, 0.0, 0.0, 0.0, 0.0))
                 end function no_args
