@@ -6,8 +6,8 @@ module m_environment
     
 	implicit none
     private
-    	character, parameter :: empty = '.', predatorc = 'K', preyc = 'P', plantc = 'x'
-      	integer, parameter :: max_animals = 15, dis = 20
+        character, parameter :: empty = ' ', predatorc = 'K', preyc = 'P', plantc = '.'
+      	integer, parameter :: max_animals = 80, dis = 41
                  
     type, public :: environment
     	character, dimension(:,:), allocatable :: plains 
@@ -17,7 +17,7 @@ module m_environment
         integer :: preys_alive = 0, predators_alive = 0, plants_alive = 0
         
         contains
-        	procedure :: populate, extinction, pass_round, print, repopulate, print_sim_vals
+        	procedure :: extinction, pass_round, print, repopulate, print_sim_vals
   	end type environment
         
         
@@ -34,39 +34,6 @@ module m_environment
         allocate(no_args%plants(max_animals*4))
 	end function no_args
                 
-  	subroutine populate(self)
-    	class(environment), intent(inout) :: self
-      	type(prey) :: prey1
-      	type(predator) :: predator1
-      	type(plant) :: plant1
-      	integer :: x, y, i, offset
-      	logical :: e
-
-      	do i=1,max_animals
-                                
-        	prey1 = prey(1, 1)
-          	e = .true.
-          	do while(e)
-            	e = add_prey(self, prey1)
-          	end do
-                        
-          	predator1 = predator(dis, dis)
-            e = .true.
-        	do while(e)        
-            	e = add_predator(self, predator1)
-          	end do
-                                
-    	end do
-        
-		do i = 1, max_animals/2
-      		plant1 = plant(dis/2, dis/2)
-        	e = .true.
-          	do while(e)        
-            	e = add_plant(self, plant1)
-        	end do
-      	end do
-	end subroutine populate
-
 	!!! FAZER METEORO FUTURAMENTE
   	subroutine extinction(self)
   		class(environment), intent(inout) :: self
@@ -86,59 +53,8 @@ module m_environment
       	real :: r
       	character :: nchar
       	res = .false.
-
-    	pred: do i=self%predators_alive, 1, -1
-        	ex = self%predators(i)%get_x()
-        	ey = self%predators(i)%get_y()
-                                
-        	if(self%predators(i)%get_energy() <= 0.5) then 
-          		self%plains(ex, ey) = empty
-          		self%predators(i) = self%predators(self%predators_alive)
-          		self%predators_alive = self%predators_alive - 1  
-            	cycle pred
-          	end if
-                                
-          	cords = self%predators(i)%think_move(self%plains, dis, dis, ex, ey)
-          	20 continue
-        	nchar = self%plains(cords(1), cords(2))
-                                
-        	if(nchar == preyc) then
-            	self%plains(ex, ey) = empty
-            	self%plains(cords(1), cords(2)) = predatorc
-                                        
-              	call self%predators(i)%move(cords)                                 
-                
-				index = get_entity(self%preys, cords(1), cords(2), self%preys_alive)
-             	if(index /= 0) then
-					self%preys(index) = self%preys(self%preys_alive)
-              		self%preys_alive = self%preys_alive - 1  
-                                        
-              		call self%predators(i)%add_energy(75.0)
-				end if
-    		else if (nchar == empty) then
-        		self%plains(ex, ey) = empty
-          		self%plains(cords(1), cords(2)) = predatorc
-    	    	call self%predators(i)%move(cords)                                 
-	
-    		else if (nchar == plantc) then
-        		self%plains(ex, ey) = empty
-        	  	self%plains(cords(1), cords(2)) = predatorc
-        	  	call self%predators(i)%move(cords)                                 
-                                        
-				index = get_entity(self%plants, cords(1), cords(2), self%plants_alive)
-             	if(index /= 0) then
-              	  	self%plants(index) = self%plants(self%plants_alive)
-              	  	self%plants_alive = self%plants_alive - 1  
-				end if
-          		
-				call self%predators(i)%sub_energy(20.0)
-   		 	else if (nchar == predatorc) then
-        		call self%predators(i)%sub_energy(25.0)
-      		end if
-                                
-		end do pred
-          				
-      	prey: do i=self%preys_alive, 1, -1        
+      	
+		prey: do i=self%preys_alive, 1, -1        
     		ex = self%preys(i)%get_x()
       		ey = self%preys(i)%get_y()
                                  
@@ -168,16 +84,15 @@ module m_environment
              	if(index /= 0) then
                 	self%plants(index) = self%plants(self%plants_alive)
                  	self%plants_alive = self%plants_alive - 1  
-                    exit
 				end if
                                         
-              	call self%preys(i)%add_energy(50.0)
+              	call self%preys(i)%add_energy(200.0)
         	else 
             	self%plains(ex, ey) = empty
                                         
 				index = get_entity(self%predators, cords(1), cords(2), self%predators_alive)
              	if(index /= 0) then
-                  	call self%predators(index)%add_energy(75.0)
+                  	call self%predators(index)%add_energy(200.0)
 				end if
                                         
               	self%preys(i) = self%preys(self%preys_alive)
@@ -186,6 +101,58 @@ module m_environment
 		  	end if
   		end do prey
                         
+
+    	pred: do i=self%predators_alive, 1, -1
+        	ex = self%predators(i)%get_x()
+        	ey = self%predators(i)%get_y()
+                                
+        	if(self%predators(i)%get_energy() <= 0.5) then 
+          		self%plains(ex, ey) = empty
+          		self%predators(i) = self%predators(self%predators_alive)
+          		self%predators_alive = self%predators_alive - 1  
+            	cycle pred
+          	end if
+                                
+          	cords = self%predators(i)%think_move(self%plains, dis, dis, ex, ey)
+        	nchar = self%plains(cords(1), cords(2))
+                                
+        	if(nchar == preyc) then
+            	self%plains(ex, ey) = empty
+            	self%plains(cords(1), cords(2)) = predatorc
+                                        
+              	call self%predators(i)%move(cords)                                 
+                
+				index = get_entity(self%preys, cords(1), cords(2), self%preys_alive)
+             	if(index /= 0) then
+					self%preys(index) = self%preys(self%preys_alive)
+              		self%preys_alive = self%preys_alive - 1  
+                                        
+              		call self%predators(i)%add_energy(200.0)
+				end if
+    		else if (nchar == empty) then
+        		self%plains(ex, ey) = empty
+          		self%plains(cords(1), cords(2)) = predatorc
+    	    	call self%predators(i)%move(cords)                                 
+	
+    		else if (nchar == plantc) then
+        		self%plains(ex, ey) = empty
+        	  	self%plains(cords(1), cords(2)) = predatorc
+        	  	call self%predators(i)%move(cords)                                 
+                                        
+				index = get_entity(self%plants, cords(1), cords(2), self%plants_alive)
+             	if(index /= 0) then
+              	  	self%plants(index) = self%plants(self%plants_alive)
+              	  	self%plants_alive = self%plants_alive - 1  
+				end if
+        		
+        		call self%predators(i)%sub_energy(15.0)
+      
+   		 	else if (nchar == predatorc) then
+        		call self%predators(i)%sub_energy(25.0)
+      		end if
+                                
+		end do pred
+          				
       	plnt: do i=self%plants_alive, 1, -1
     		ex = self%plants(i)%get_x()
       		ey = self%plants(i)%get_y()
@@ -232,24 +199,15 @@ module m_environment
     	real, dimension(4) :: new_vals, old_vals_predator, old_vals_prey
     	integer :: i, j, x, y
     	logical :: e
-      	chosen_prey = self%preys(max_animals)
-    	chosen_predator = self%predators(max_animals)
-      	old_vals_predator = chosen_predator%get_brain_vals()
-      	old_vals_prey = chosen_prey%get_brain_vals()
                         
     	call self%extinction()
 
 		do i=1,max_animals
                         
   			!Recriando Presas
-      		new_vals = old_vals_prey
-    		call random_number(c)
-      		call random_number(m)
-      		j = floor(m*3) + 1
-    		call random_number(new_vals(j))
-      		new_vals(j) = ((floor(new_vals(j) * 2.0)) + old_vals_prey(j)) * merge(-1, 1, c > 0.5)
-
-      		prey1 = prey(1, 1, new_vals(1), new_vals(2), new_vals(3), new_vals(4))
+			new_vals = genetic_select(self%preys, max_animals)
+      		
+			prey1 = prey(1, 1, new_vals(1), new_vals(2), new_vals(3), new_vals(4))
 
       		e = .true.
       		do while(e)                                          
@@ -257,12 +215,7 @@ module m_environment
           	end do
                         
             ! Recriando Predadores
-          	new_vals = old_vals_predator
-          	call random_number(c)
-          	call random_number(m)
-          	j = floor(m*3) + 1
-            call random_number(new_vals(j))
-          	new_vals(j) = ((floor(new_vals(j) * 2.0)) + old_vals_predator(j)) * merge(-1, 1, c > 0.5)
+			new_vals = genetic_select(self%predators, max_animals)
                                 
         	predator1 = predator(dis, dis, new_vals(1), new_vals(2), new_vals(3), new_vals(4))
                                 
@@ -270,7 +223,6 @@ module m_environment
         	do while(e)        
             	e = add_predator(self, predator1)
           	end do
-                                
 		end do
 
 		! Recriando Plantas
@@ -367,7 +319,21 @@ module m_environment
   	subroutine print(self)
       	class(environment) :: self
     	integer :: i, j
-    	write(*, "(*(A))") ((self%plains(j, i), " " , j=1, dis), new_line("A"), i=1, dis)
+		
+    	write(*, "(*(A))", advance="no") (" ―", i=1, dis)
+		print *, ""
+		do i = 1, dis
+			write (*, "(A)", advance="no") " | "
+			do j = 1, dis
+    			write(*, "(*(A))", advance="no") self%plains(i, j)
+				if(j /= dis) then
+					write (*, "(A)", advance="no") ' '
+				end if
+			end do
+			print *, "|" 
+		end do
+    	write(*, "(*(A))", advance="no") (" ―", i=1, dis)
+		print *, ""
     end subroutine print
 	
 	subroutine print_sim_vals(self)

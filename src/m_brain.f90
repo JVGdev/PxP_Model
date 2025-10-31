@@ -81,15 +81,15 @@ module m_brain
       	aj = y
                         
       	preview = self%calc_entities(view, n, m, ai, aj)
-    	preview(self%last_x, self%last_y) =  0.0
-    	preview(x, y) = 0.0
+    	preview(self%last_x, self%last_y) =  -10000.0
+    	preview(x, y) = -10000.0
     	self%last_x = x
       	self%last_y = y
 
-      	bi = merge(x+1, x, x < n)
-      	ai = merge(x-1, x, x > 1)
-    	bj = merge(y+1, y, y < m)      ! RAW e WAR
-    	aj = merge(y-1, y, y > 1)
+      	bi = merge(x+1, x, x+1 < n)
+      	ai = merge(x-1, x, x-1 > 1)
+    	bj = merge(y+1, y, y+1 < m)      ! RAW e WAR
+    	aj = merge(y-1, y, y-1 > 1)
                         
     	nxt = maxloc(preview(ai:bi, aj:bj))
       	nxt(1) = nxt(1) + (ai-1) 
@@ -97,7 +97,7 @@ module m_brain
                                 
 		!do i=1, n
         !  	do j=1, m
-		!	  	write (*, "(F10.3)", advance="no") preview(i, j)
+		!	  	write (*, "(F3.0)", advance="no") preview(i, j)
   		!	end do
         !   print *
     	!end do		
@@ -110,32 +110,37 @@ module m_brain
         character, dimension(:,:), intent(in) :: view
         integer, intent(in) :: n, m, ai, aj
         real, dimension(n,m) :: calc_entities
-    	integer :: i, j, valx, valy, bi, bj
+    	integer :: i, j, valx, valy, bx, by
         character :: act
     	calc_entities = 0.0
-                        
+		
+		valx = merge(ai-1, ai, ai-1 > 1)                       
+		valy = merge(aj-1, aj, aj-1 > 1)                       
+		bx = merge(ai+1, ai, ai+1 < n)                       
+		by = merge(aj+1, aj, aj+1 < m)                       
+
         do i=1, n
   	    	do j=1, m
             	act = view(i, j)
                 if(ai == i .and. aj == j) then
-                else if(act == 'x') then
-                	call wave(calc_entities, i, j, n, m, self%get_plant_val()) 
+                else if(act == '.') then
+                	call wave(calc_entities, i, j, n, m, self%get_plant_val(), valx, valy, bx, by) 
               	else if(act == 'K') then
-          			call wave(calc_entities, i, j, n, m, self%get_predator_val()) 
+          			call wave(calc_entities, i, j, n, m, self%get_predator_val(), valx, valy, bx, by)
               	else if(act == 'P') then
-            		call wave(calc_entities, i, j, n, m, self%get_prey_val()) 
+            		call wave(calc_entities, i, j, n, m, self%get_prey_val(), valx, valy, bx, by)
           		end if
         	end do
         end do
 	  	
     end function
                 
-	recursive subroutine wave(matrix, x, y, n, m, weight)
-    	integer, intent(in) :: x, y, n, m
+	recursive subroutine wave(matrix, x, y, n, m, weight, cx, cy, dx, dy)
+    	integer, intent(in) :: x, y, n, m, cx, cy, dx, dy
         real, intent(in) :: weight
         real, dimension(:,:) :: matrix
   		real, allocatable :: wlist(:)
-        integer :: times, max_cord, i, j, i_window_m, i_window_p, j_window_m, j_window_p
+        integer :: times, max_cord, i, j, marg_i, marg_j
         real :: nweight
         
 		max_cord = merge(n, m, n > m)
@@ -147,18 +152,15 @@ module m_brain
         nweight = weight
         do while(nweight >= 1 .and. times <= max_cord)
           	wlist(times) = nweight
-			nweight = nweight / 2
+			nweight = nweight / 1.5 !Aumenta diretamente a precisão
 			times = times + 1
         end do
 		
-		do i=0, times
-        	do j=0, times
-                i_window_m = merge(x-i, 1, x-i > 1)
-                i_window_p = merge(x+i, n, x+i < n)
-                j_window_m = merge(y-j, 1, y-j > 1)
-                j_window_p = merge(y+j, m, y+j < m)
-				matrix(i_window_m, j_window_m) = matrix(i_window_m, j_window_m) + wlist((x+y) - (i+j))
-				matrix(i_window_p, j_window_p) = matrix(i_window_p, j_window_p) + wlist((x+y) - (i+j))
+		do i=cx, dx
+        	do j=cy, dy
+				marg_i = merge(x-i, 1, x-i > 1)
+				marg_j = merge(y-j, 1, y-j > 1)
+				matrix(i, j) = matrix(i, j) + wlist((marg_i - marg_j)+1)
   			end do
         end do		
       	deallocate(wlist)

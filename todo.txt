@@ -1,0 +1,10 @@
+
+ - Revisar o algoritmo genético completo
+ - Implementar a reprodução assexuada de plantas (Necessário implementar toda a biologia trancada da planta também)
+ - Refactor do código de come-come 
+ - Mover morte para env_helper
+ - Otimizar muito o brain calculando só os 8 quadrados em volta, ou trocar todo o sistema de pathfinding
+ - Finalmente implementar vida, rush chance (Features Trancadas)
+ - Ajeitar o makefile para manter modulos
+
+ - Implementar processamento paralelo

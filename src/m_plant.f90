@@ -89,7 +89,7 @@ module m_plant
 					integer, dimension(2) :: cords
 					integer :: x, y
       				real :: r
-
+                    
 					x = self%get_x()
 					y = self%get_y()
     				
@@ -99,30 +99,35 @@ module m_plant
                   		select case(floor(4*r) + 1)
                     		case(1)
                         		if(x + 1 < vn .and. view(x+1, y) == empty) then
-                            		cords(1) = x + 1
-                          		else 
-                            		cords(1) = 0
+                            		x = x + 1
+								else
+									x = 0
                           		end if       
                     		case(2)
                           		if (x - 1 > 1 .and. view(x-1, y) == empty) then
                             		x = x - 1
-                          		else 
-                            		cords(1) = 0
+								else
+									x = 0
                           		end if       
                       		case(3) 
                         		if(y + 1 < vn .and. view(x, y+1) == empty) then
                           			y = y + 1
                           		else 
-                            		cords(2) = 0
+                            		y = 0
                           		end if       
                   			case(4)
                           		if(y - 1 > 1 .and. view(x, y-1) == empty) then
                             		y = y - 1
                           		else 
-                            		cords(2) = 0
+                            		y = 0
                           		end if    
                   		end select   
-            		end if
+            		else
+						cords = 0
+						return
+					end if
+					cords(1) = x
+					cords(2) = y
 				end function spread_cords
 end module m_plant
 

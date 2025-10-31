@@ -24,7 +24,7 @@ module m_predator
                 type(predator) function no_args()
                         call no_args%set_x(1)
                         call no_args%set_y(1)
-                        call no_args%set_energy(100.0)
+                        call no_args%set_energy(200.0)
                         call no_args%set_vision(4)
                         call no_args%set_movement(1)
                         call no_args%set_health(100)

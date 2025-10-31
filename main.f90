@@ -1,4 +1,4 @@
-program main
+  program main
   	use m_environment
 
   	implicit none 
@@ -10,7 +10,7 @@ program main
 	k = 0
 
 	environment1 = environment()
-  	call environment1%populate()
+  	call environment1%repopulate()
         
 	do while(opt /= '0')
         
