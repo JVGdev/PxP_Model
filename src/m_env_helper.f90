@@ -5,23 +5,37 @@ module m_env_helper
 	implicit none
     private
 
-    public get_entity, genetic_select
+    public get_entity, genetic_select, kill
     
     contains
 
-		function get_entity(list, x, y, max) result (index)
-        	class(entity), dimension(:), intent(in) :: list
+		function get_entity(list_indexes, list_entities, x, y, max) result (index)
+        	integer, dimension(:), intent(in) :: list_indexes
+        	class(entity), dimension(:), intent(in) :: list_entities
 			integer, intent(in) :: x, y, max
-			integer :: index, i
+			integer :: i
+			integer, dimension(2) :: index 
 			index = 0
 			
           	do i = max, 1, -1
-          		if(list(i)%get_x() == x .and. list(i)%get_y() == y) then
-                  	index = i
+				index(1) = list_indexes(i)
+          		if(list_entities(index(1))%get_x() == x .and. list_entities(index(1))%get_y() == y) then
+                  	index(2) = index(1)
+					index(1) = i
 					exit
               	end if
           	end do        
 		end function get_entity
+	
+		subroutine kill(list_i, list_top, index)
+			integer, allocatable, intent(inout) :: list_i(:)
+			integer, intent(inout) :: list_top
+			integer, intent(in) :: index
+          		
+          	list_i(index) = list_i(list_top)
+          	list_top = list_top - 1  
+
+		end subroutine kill
 		
 		subroutine recombine(vessel, parents, size)
     		real, dimension(:), intent(inout) :: vessel
@@ -38,20 +52,18 @@ module m_env_helper
 
 		end subroutine recombine
 
-		function genetic_select(list, size) result (offspring)
+		function genetic_select(list_i, list_o, size) result (offspring)
 			real, dimension(4) :: offspring
-      		class(animal), dimension(:), intent(in) :: list
+      		class(animal), dimension(:), intent(in) :: list_o
+      		integer, dimension(:), intent(in) :: list_i
 			integer, intent(in) :: size
       		real :: m, c
     		real, dimension(4) :: new_vals, old_vals_p1, old_vals_p2
-        	class(animal), allocatable ::  parent1, parent2
     		integer :: gene
 			offspring = 0.0    	
 
-			parent1 = list(1)
-    		parent2 = list(2)
-      		old_vals_p1 = parent1%get_brain_vals()
-      		old_vals_p2 = parent2%get_brain_vals()
+      		old_vals_p1 = list_o(list_i(1))%get_brain_vals()
+      		old_vals_p2 = list_o(list_i(2))%get_brain_vals()
 			call recombine(offspring, [ old_vals_p1, old_vals_p2 ], 4)	    	
 
 			! Selecionando Gene Random

@@ -152,7 +152,7 @@ module m_brain
         nweight = weight
         do while(nweight >= 1 .and. times <= max_cord)
           	wlist(times) = nweight
-			nweight = nweight / 1.5 !Aumenta diretamente a precisão
+			nweight = nweight / 1.25 !Aumenta diretamente a precisão
 			times = times + 1
         end do
 		
@@ -160,7 +160,7 @@ module m_brain
         	do j=cy, dy
 				marg_i = merge(x-i, 1, x-i > 1)
 				marg_j = merge(y-j, 1, y-j > 1)
-				matrix(i, j) = matrix(i, j) + wlist((marg_i - marg_j)+1)
+				matrix(i, j) = matrix(i, j) + wlist((marg_i - marg_j))
   			end do
         end do		
       	deallocate(wlist)

@@ -1,4 +1,5 @@
 module m_predator
+		use m_entity
         use m_animal
         use m_brain
 
@@ -10,7 +11,7 @@ module m_predator
                 private
                         real :: attack
                 contains
-                        procedure :: get_attack, set_attack
+                        procedure :: get_attack, set_attack, eat
 
         end type
 
@@ -24,6 +25,7 @@ module m_predator
                 type(predator) function no_args()
                         call no_args%set_x(1)
                         call no_args%set_y(1)
+						call no_args%set_matter(100.0)
                         call no_args%set_energy(200.0)
                         call no_args%set_vision(4)
                         call no_args%set_movement(1)
@@ -44,14 +46,7 @@ module m_predator
                 type(predator) function all_args(x, y, predator_val, prey_val, plant_val, stop_val)
                         integer, intent(in) :: x, y
                         real, intent(in) :: predator_val, prey_val, plant_val, stop_val
-                        call all_args%set_x(x)
-                        call all_args%set_y(y)
-                        call all_args%set_energy(100.0)
-                        call all_args%set_vision(4)
-                        call all_args%set_movement(1)
-                        call all_args%set_health(100)
-                        call all_args%set_attack(2.0)
-                        call all_args%set_passive_cost(5.0)
+                        all_args = req_args(x, y)
                         
                         call all_args%set_brain(brain(art, predator_val, prey_val, plant_val, stop_val))
                 end function all_args
@@ -74,4 +69,17 @@ module m_predator
                         call self%set_y(step(2))
                         call self%sub_energy(self%get_passive_cost())
                 end subroutine move
+                
+				subroutine eat(self, eaten, op)
+                        class(predator), intent(inout) :: self
+                        class(entity), allocatable, intent(in) :: eaten
+						logical, intent(in) :: op
+					  	
+						if (op) then
+							call self%add_energy(eaten%get_matter())
+						else
+							call self%sub_energy(eaten%get_matter()/10)
+						end if							
+
+                end subroutine eat
 end module m_predator

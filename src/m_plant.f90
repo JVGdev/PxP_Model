@@ -29,6 +29,7 @@ module m_plant
                 type(plant) function no_args()
                         call no_args%set_x(1)
                         call no_args%set_y(1)
+                        call no_args%set_matter(100.0)
                         call no_args%set_energy(100.0)
                         call no_args%set_food(4.0)
                         call no_args%set_spread_chance(0.10)

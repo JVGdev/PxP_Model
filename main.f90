@@ -1,4 +1,4 @@
-  program main
+ program main
   	use m_environment
 
   	implicit none 
@@ -14,7 +14,7 @@
         
 	do while(opt /= '0')
         
-        print *, achar(27)//"[1J"
+        !print *, achar(27)//"[1J"
         call environment1%print()
         
         print "(A)", "Digite 1 para passar um turno | Digite 2 Para passar uma geração | Digite 3 para passar N gerações | Digite 0 para finalizar"

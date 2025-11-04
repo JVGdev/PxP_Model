@@ -27,12 +27,13 @@ module m_prey
                 type(prey) function no_args()
                         call no_args%set_x(1)
                         call no_args%set_y(1)
+						call no_args%set_matter(200.0)
                         call no_args%set_energy(200.0)
                         call no_args%set_vision(4)
                         call no_args%set_movement(1)
                         call no_args%set_health(100)
                         call no_args%set_rush_chance(0.05)
-                        call no_args%set_passive_cost(5.0)
+                        call no_args%set_passive_cost(20.0)
 
                         call no_args%set_brain(brain(art, 0.0, 0.0, 0.0, 0.0))
                 end function no_args
@@ -47,15 +48,8 @@ module m_prey
                 type(prey) function all_args(x, y, predator_val, prey_val, plant_val, stop_val)
                         integer, intent(in) :: x, y
                         real, intent(in) :: predator_val, prey_val, plant_val, stop_val
-                        call all_args%set_x(x)
-                        call all_args%set_y(y)
-                        call all_args%set_energy(100.0)
-                        call all_args%set_vision(4)
-                        call all_args%set_movement(1)
-                        call all_args%set_health(100)
-                        call all_args%set_rush_chance(2.0)
-                        call all_args%set_passive_cost(5.0)
-                        
+						all_args = req_args(x, y)                        
+
                         call all_args%set_brain(brain(art, predator_val, prey_val, plant_val, stop_val))
                 end function all_args
 

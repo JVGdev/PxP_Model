@@ -5,8 +5,9 @@ module m_entity
         type, abstract, public :: entity
                 private
                         integer :: x__, y__
+						real :: matter
                 contains
-                        procedure :: get_x, set_x, get_y, set_y
+                        procedure :: get_x, set_x, get_y, set_y, get_matter, sub_matter, add_matter, set_matter
         end type
 
         contains
@@ -32,4 +33,26 @@ module m_entity
                         self%y__ = merge(y, 1, y > 1)
                 end subroutine set_y
 
+                real function get_matter(self) result(matter)
+                        class(entity), intent(in) :: self
+                        matter = self%matter
+                end function get_matter
+                
+				subroutine set_matter(self, matter)
+                        class(entity), intent(out) :: self
+                        real, intent(in) :: matter
+                        self%matter = matter
+                end subroutine set_matter
+
+                subroutine add_matter(self, matter)
+                        class(entity), intent(out) :: self
+                        real, intent(in) :: matter
+                        self%matter = self%matter + matter
+                end subroutine add_matter
+
+                subroutine sub_matter(self, matter)
+                        class(entity), intent(out) :: self
+                        real, intent(in) :: matter
+                        self%matter = self%matter - matter
+                end subroutine sub_matter
 end module m_entity
